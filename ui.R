@@ -62,11 +62,13 @@ dashboardPage(
                     h4(
                       "The IS4PROD App is a ",
                       a(href = 'http://shiny.rstudio.com', 'Shiny'),
-                      "web application built on top of R for machine level energy-related data analytics, powered by several R packages (more on info tab)."),
+                      "web application built on top of R for machine level energy-related data analytics, 
+                      powered by several R packages (more on info tab)."),
                     
                     h4("The app utilises Machine Learning techniques to extract useful insights from datasets."),
                     br(),
-                    h4("To get started, upload a CSV file on the 'Data Upload' panel at the sidebar, then follow down the steps on the sidebar."),
+                    h4("To get started, upload a CSV file on the 'Data Upload' panel at the sidebar, 
+                       then follow down the steps on the sidebar."),
                     br(),
                     h4("Further instructions are available inside each tab panel."),
                     br(),
@@ -112,7 +114,24 @@ dashboardPage(
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
-                  width = 6
+                  width = 6,
+                  fileInput('file1', 'Choose CSV File',
+                            accept=c('text/csv', 
+                                     'text/comma-separated-values,text/plain', 
+                                     '.csv')),
+                  tags$hr(),
+                  h4("Formatting Options:"),
+                  checkboxInput('header', 'Header', TRUE),
+                  radioButtons('sep', 'Separator',
+                               c(Comma=',',
+                                 Semicolon=';',
+                                 Tab='\t'),
+                               ','),
+                  radioButtons('quote', 'Quote',
+                               c(None='',
+                                 'Double Quote'='"',
+                                 'Single Quote'="'"),
+                               '"')
                 )  
               ),
               
@@ -120,11 +139,12 @@ dashboardPage(
                 
                 #Data Table Visualisation Box
                 box(
-                  title = "Data Table Visualisation",
+                  title = "Data check: you can see here the first 15 rows of your data",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
-                  width = 12
+                  width = 12,
+                  tableOutput('contents')
                 )  
               )
       ),
@@ -138,9 +158,12 @@ dashboardPage(
                   solidHeader = TRUE,
                   width = 12,
                   br(),
-                  div("This is your energy data, indexed by time. Use the slider below it or click and drag over the graph to select a time window.
-                      The values of average KW and total energy spending will be automatically updated on the left panel. 
-                      The further analyses (Histogram, Cycle Times, etc) on the next tabs will also be based on this selection."),
+                  div("This is your energy data, indexed by time. Use the slider below it or 
+                      click and drag over the graph to select a time window.
+                      The values of average KW and total energy spending will be automatically 
+                      updated on the left panel. 
+                      The further analyses (Histogram, Cycle Times, etc) on the next tabs will 
+                      also be based on this selection."),
                   br(),
                  
                   dygraphOutput("timeseries")
