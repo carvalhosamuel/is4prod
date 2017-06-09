@@ -36,6 +36,8 @@ dashboardPage(
       br(),
       br(),
       menuItem("Info", tabName ="info", icon = icon("info-circle"))
+
+    
     )
   ),
   
@@ -92,7 +94,7 @@ dashboardPage(
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
-                  width = 6,
+                  width = 5,
                   p("This app expects you to upload a .CSV file with timestamped three-phase RMS current values obtained from your machine.
                     As this app follows the 'Tidy Data' guidelines, the input spreadsheet must have its first line as columns names, each column as one variable, and each row as one observation of that variable at the related timestamp."),
                  
@@ -114,13 +116,14 @@ dashboardPage(
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
-                  width = 6,
-                  fileInput('file1', 'Choose CSV File',
+                  width = 3,
+                  fileInput('file1', 'Choose CSV File (max 60mb):',
                             accept=c('text/csv', 
                                      'text/comma-separated-values,text/plain', 
                                      '.csv')),
                   tags$hr(),
-                  h4("Formatting Options:"),
+                  h4("Quick Formatting Options:"),
+                  numericInput('voltage','Phase-to-phase Voltage', 400, min = 0, max = 1000000, step = 1),
                   checkboxInput('header', 'Header', TRUE),
                   radioButtons('sep', 'Separator',
                                c(Comma=',',
@@ -132,10 +135,8 @@ dashboardPage(
                                  'Double Quote'='"',
                                  'Single Quote'="'"),
                                '"')
-                )  
-              ),
-              
-              fluidRow(
+                ),  
+             
                 
                 #Data Table Visualisation Box
                 box(
@@ -143,7 +144,7 @@ dashboardPage(
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
-                  width = 12,
+                  width = 4,
                   tableOutput('contents')
                 )  
               )
@@ -151,31 +152,99 @@ dashboardPage(
       
       # Data Selection tab content
       tabItem(tabName = "selection",
+             
               fluidRow(
+                #Info Box
+                box(
+                  title = "Additional help/information:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  collapsed = TRUE,
+                  width = 12,
+                  br(),
+                  div("This is your energy data, indexed by time. Use the slider below it or 
+                      click and drag over the graph to select a time window you want to analyse.
+                      The values of average KW and total energy spending will be automatically 
+                      updated on the information boxes below the graph. 
+                      All subsequent analyses (Histogram, Cycle Times, Clustering, etc) on the next tabs will 
+                      be based on your selection from this tab."),
+                  br()
+
+
+                ),
+                
+                #Graph box
                 box(
                   title = "Select your data from the graph below:",
                   status = "info",
                   solidHeader = TRUE,
+                  collapsible = TRUE,
                   width = 12,
+                  dygraphOutput("timeseries"),
                   br(),
-                  div("This is your energy data, indexed by time. Use the slider below it or 
-                      click and drag over the graph to select a time window.
-                      The values of average KW and total energy spending will be automatically 
-                      updated on the left panel. 
-                      The further analyses (Histogram, Cycle Times, etc) on the next tabs will 
-                      also be based on this selection."),
-                  br(),
-                 
-                  dygraphOutput("timeseries")
+                  # Dynamic infoBoxes
+                  infoBoxOutput("fromtoBox"),
+                  infoBoxOutput("avgBox"),
+                  infoBoxOutput("totalBox")
                   
-                      
-                )
+               
+                )    
+               
+               
               )  
       ),
       
       # Energy Histogram tab content
       tabItem(tabName = "energyhistogram",
-              h2("Energy Histogram tab content")
+              fluidRow(
+                
+                #Info Box
+                box(
+                  title = "Additional help/information:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  collapsed = TRUE,
+                  width = 12,
+                  br(),
+                  div("This is the KW histogram from your selection. The bars show the occurence (in a density scale, 
+                      from 0 to 1) of the values of KW given by the X axis. The line is a smoothed curve of the same information. 
+                      A desirable energy histogram would have higher peaks around the typical production KW values, and no peaks 
+                      close to zero, meaning that the process stays more often on production than in idle or stand-by status.
+                      Use this histogram to establish a reasonable treshold between idle and production energy values."),
+                  br()
+                  
+                  
+                  ),
+                
+                
+                #Graph box
+                box(
+                  title = "Energy histogram of your data:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 10,
+                  plotOutput("histo", dblclick = "plot2_dblclick", brush = brushOpts(id = "plot2_brush",resetOnNew = TRUE)), 
+                  br()
+                ),
+                
+                #Graph Options
+                box(
+                  title = "Graph Options:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 2,
+                  sliderInput("binwidth", "Binwidth:", min = 0.05, max = 2, 0.5, step = 0.05),
+                  br(),
+                  p("Zoom in and out by selecting an area and double clicking it." )
+                )
+                
+            )    
+                
+              
       ),
       
       # Cycle Time tab content

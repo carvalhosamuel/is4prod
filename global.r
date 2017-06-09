@@ -15,18 +15,6 @@ library(zoo)
 Sys.setenv(TZ="GMT")
 Sys.setenv(LANG= "en")
 
-#setwd("D:/Google Drive/Masters/R/myianodashboard")
-
-rm(list = ls())
-
-load("data/myiano.RData")
-
-#Thormac2B$time <- strptime(as.character(data$time), format = "%Y-%m-%d %H:%M:%S", tz = "GMT")
-
-attach(data)
-
-ts1 <- xts(AvgKW, Time, tzone = "GMT")
-
 
 find_peaks <- function (x, m = 5){
   shape <- diff(sign(diff(x, na.pad = FALSE)))
