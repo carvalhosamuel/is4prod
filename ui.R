@@ -31,7 +31,10 @@ dashboardPage(
       menuItem("Data Selection", tabName = "selection", icon = icon("line-chart")),
       menuItem("Energy Histogram", tabName = "energyhistogram", icon = icon("bar-chart")),
       menuItem("Cycle Time Analysis", tabName = "cycletime", icon = icon("clock-o")),
-      menuItem("Clustering Analysis", tabName = "clustering", icon = icon("cogs")),
+      menuItem("Clustering Analysis",  icon = icon("cogs"),
+               menuSubItem("Production/Idle",tabName = "clustering2"),
+               menuSubItem("Production/Scrap/Idle",tabName = "clustering3")
+               ),
       menuItem("Report", tabName = "report", icon = icon("pie-chart")),
       br(),
       br(),
@@ -65,19 +68,19 @@ dashboardPage(
                       "The IS4PROD App is a ",
                       a(href = 'http://shiny.rstudio.com', 'Shiny'),
                       "web application built on top of R for machine level energy-related data analytics, 
-                      powered by several R packages (more on info tab)."),
-                    
-                    h4("The app utilises Machine Learning techniques to extract useful insights from datasets."),
+                      powered by several R packages (more on info tab). The app utilises Machine Learning 
+                      techniques to extract useful insights from energy datasets."),
                     br(),
-                    h4("To get started, upload a CSV file on the 'Data Upload' panel at the sidebar, 
-                       then follow down the steps on the sidebar."),
+                    h4("To get started, upload a CSV file in the 'Data Upload' panel, 
+                       then follow down the steps on the sidebar. If you prefer it, use the provided 
+                       demo dataset to familiarise with the app and its features."),
                     br(),
                     h4("Further instructions are available inside each tab panel."),
                     br(),
                     h4(
                       HTML('&copy'),
-                      '2017 By Samuel Carvalho. ',
-                      a(href = 'http://www.apache.org/licenses/LICENSE-2.0', 'Terms of Use.')
+                      '2017 By Samuel Carvalho. '
+                     
                     )
                 )
                 
@@ -96,7 +99,7 @@ dashboardPage(
                   collapsible = TRUE,
                   width = 5,
                   p("This app expects you to upload a .CSV file with timestamped three-phase RMS current values obtained from your machine.
-                    As this app follows the 'Tidy Data' guidelines, the input spreadsheet must have its first line as columns names, each column as one variable, and each row as one observation of that variable at the related timestamp."),
+                    As this app follows the ",a(href = 'https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html', 'Tidy Data'), " guidelines, the input spreadsheet must have its first line as columns names, each column as one variable, and each row as one observation of that variable at the related timestamp."),
                  
                   p("The name of each column doesn't matter, as long as the order of the columns are the following: Timestamp, Phase A Currents, Phase B Currents, Phase C Currents."),
                 
@@ -121,6 +124,7 @@ dashboardPage(
                             accept=c('text/csv', 
                                      'text/comma-separated-values,text/plain', 
                                      '.csv')),
+                  checkboxInput('demodataset',"I won't upload a file. Use the demo dataset instead.",FALSE),
                   tags$hr(),
                   h4("Quick Formatting Options:"),
                   numericInput('voltage','Phase-to-phase Voltage', 400, min = 0, max = 1000000, step = 1),
@@ -182,7 +186,8 @@ dashboardPage(
                   collapsible = TRUE,
                   width = 12,
                   dygraphOutput("timeseries"),
-                  br(),
+                  hr(),
+                  h3("Quick Insights:"),
                   # Dynamic infoBoxes
                   infoBoxOutput("fromtoBox"),
                   infoBoxOutput("avgBox"),
@@ -232,7 +237,7 @@ dashboardPage(
                 
                 #Graph Options
                 box(
-                  title = "Graph Options:",
+                  title = "Options:",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -249,12 +254,179 @@ dashboardPage(
       
       # Cycle Time tab content
       tabItem(tabName = "cycletime",
-              h2("Cycle time tab content")
+              fluidRow(
+                
+                #Info Box
+                box(
+                  title = "Additional help/information:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  collapsed = TRUE,
+                  width = 12,
+                  br(),
+                  div("This graph is called the Autocorrelogram of the dataset. It is done by calculating the correlation between the dataset and 
+                      lagged versions of itself. The x axis brings the number of lags in each comparison, and the y axis indicates the value of this
+                      correlation, always from 0 to 1. At x=0 lags, the correlation is exactly 1, as we are comparing the dataset with itself shifted
+                      by 0 lags. The blue dotted line indicates the statistical signifance treshold, so any peak above these lines is a good candidate 
+                      for being the actual cycle time of this dataset. Higher peaks indicate higher correlation, and therefore more probability of being
+                      the real value."),
+                  br()
+                  
+                  
+                ),
+                
+                
+                #Graph box
+                box(
+                  title = "Cycle time identification:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 10,
+                  plotOutput("correloplot"), 
+                  br(),
+                  # Dynamic infoBoxes
+                  infoBoxOutput("stcandidate"),
+                  infoBoxOutput("ndcandidate"),
+                  infoBoxOutput("rdcandidate")
+                ),
+                
+                #Graph Options
+                box(
+                  title = "Options:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 2,
+                  sliderInput("lagsnumber", "Number of lags:", min = 2, max = 5000, 200, step = 10),
+                  br(),
+                  sliderInput("filter", "Filter selectivity:", min = 1, max = 20, 5, step = 1),
+                  br(),
+                  p("Move both sliders to find the best candidate cycle time." )
+                )
+                
+              )    
       ),
       
-      # Clustering tab content
-      tabItem(tabName = "clustering",
-              h2("Clustering tab content")
+      # Clustering 2 tab content
+      tabItem(tabName = "clustering2",
+              fluidRow(
+                
+                #Info Box
+                box(
+                  title = "Additional help/information:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  collapsed = TRUE,
+                  width = 12,
+                  br(),
+                  div("This graph is the outcome of a clustering algorithm called KMeans. The algorithm will automatically categorise your data into
+                      two different categories, expected to be production and idle. The green points indicate production, and the blue ones indicate idle.
+                      A cycle time must be specified. By the default, the best candidate from the previous tab will be used. There are also controls to choose
+                      between PCA (Principal Component Analysis) and ICA (Independent Component Analysis) features, besides the desired number of features."
+                  )    
+                  
+                  
+                ),
+                
+                
+                #Graph box
+                box(
+                  title = "Clustering:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 10,
+                  dygraphOutput("clustering2"),
+                  hr(),
+                  h3("Quick Insights:"),
+                  # Dynamic infoBoxes
+                  infoBoxOutput("productsBox2c"),
+                  infoBoxOutput("pTimeBox2c"),
+                  infoBoxOutput("iTimeBox2c")
+                  
+                  
+                ),
+                
+                
+                #Graph Options
+                box(
+                  title = "Options:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 2,
+                  uiOutput("cycletime2"),
+                  radioButtons('components', 'Features extraction:', c('PCA Components'='pca', 'ICA Components'='ica')),
+                  sliderInput('features', 'Number of features:', min = 2, max = 20, 5)
+                                 
+                                
+                               
+                )
+               
+              )    
+      ),
+      
+      # Clustering 3 tab content
+      tabItem(tabName = "clustering3",
+              fluidRow(
+
+                #Info Box
+                box(
+                  title = "Additional help/information:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  collapsed = TRUE,
+                  width = 12,
+                  br(),
+                  div("This graph is the outcome of a clustering algorithm called KMeans. The algorithm will automatically categorise your data into
+                      two different categories, expected to be production and idle. The green points indicate production, and the blue ones indicate idle.
+                      A cycle time must be specified. By the default, the best candidate from the previous tab will be used. There are also controls to choose
+                      between PCA (Principal Component Analysis) and ICA (Independent Component Analysis) features, besides the desired number of features."
+                  )
+
+
+                  ),
+
+
+                #Graph box
+                box(
+                  title = "Clustering:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 10,
+                  dygraphOutput("clustering3"),
+                  hr(),
+                  h3("Quick Insights:"),
+                  # Dynamic infoBoxes
+                  infoBoxOutput("productsBox3c"),
+                  infoBoxOutput("pTimeBox3c"),
+                  infoBoxOutput("iTimeBox3c")
+
+
+                ),
+
+
+                #Graph Options
+                box(
+                  title = "Options:",
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 2,
+                  uiOutput("cycletime3"),
+                  radioButtons('components3c', 'Features extraction:', c('PCA Components'='pca', 'ICA Components'='ica')),
+                  sliderInput('features3c', 'Number of features:', min = 2, max = 20, 5)
+
+
+
+                )
+
+            )
       ),
       
       # Report tab content
