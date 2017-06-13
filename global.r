@@ -10,6 +10,8 @@ library(Cairo)
 library(xts)
 library(dygraphs)
 library(zoo)
+library(fastICA)
+library(reshape, quietly=TRUE)
 
 #Setting right time zone
 Sys.setenv(TZ="GMT")

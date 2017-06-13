@@ -31,9 +31,9 @@ dashboardPage(
       menuItem("Data Selection", tabName = "selection", icon = icon("line-chart")),
       menuItem("Energy Histogram", tabName = "energyhistogram", icon = icon("bar-chart")),
       menuItem("Cycle Time Analysis", tabName = "cycletime", icon = icon("clock-o")),
-      menuItem("Clustering Analysis",  icon = icon("cogs"),
-               menuSubItem("Production/Idle",tabName = "clustering2"),
-               menuSubItem("Production/Scrap/Idle",tabName = "clustering3")
+      menuItem("Clustering Analysis",  tabName = "clustering2", icon = icon("cogs")
+               #menuSubItem("Production/Idle",tabName = "clustering2")
+               #menuSubItem("Production/Scrap/Idle",tabName = "clustering3")
                ),
       menuItem("Report", tabName = "report", icon = icon("pie-chart")),
       br(),
@@ -431,7 +431,76 @@ dashboardPage(
       
       # Report tab content
       tabItem(tabName = "report",
-              h2("Report tab content")
+              fluidRow(
+                
+                #Graph Box
+                box(
+                 
+                  title = tagList(shiny::icon("plug"), " Energy OEE"),
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 5,
+                  height = "700px",
+                  plotOutput("energypiechart"),
+                  hr(),
+                  uiOutput("energyreport")
+                 
+                  # Dynamic infoBoxes
+                  # infoBoxOutput("productsBox3c"),
+                  # infoBoxOutput("pTimeBox3c"),
+                  # infoBoxOutput("iTimeBox3c")
+                  
+                  
+                ),
+                
+                
+                #Graph Options
+                box(
+                  title = tagList(shiny::icon("eur"), " Costs"),
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 2,
+                  height = "700px",
+                  numericInput("kwprice", "KWh Price (€):", value = 0.05, min = 0, step = 0.01),
+                  p("Insert here the price of the KWh for the costs' addressing calculations."),
+                  hr(),
+                  uiOutput("costsreport"),
+                  hr(),
+                  strong("Download This Report"),
+                  p("(Generates a .pdf file)"),
+                  downloadButton('downloadReport')
+                  
+                  
+                  
+                ),
+                
+                
+                #Graph box
+                box(
+                  title = tagList(shiny::icon("clock-o"), " Time OEE"),
+                  status = "info",
+                  solidHeader = TRUE,
+                  collapsible = TRUE,
+                  width = 5,
+                  height = "700px",
+                  plotOutput("timepiechart"),
+                  hr(),
+                  uiOutput("timereport")
+                 
+                  # Dynamic infoBoxes
+                  # infoBoxOutput("productsBox3c"),
+                  # infoBoxOutput("pTimeBox3c"),
+                  # infoBoxOutput("iTimeBox3c")
+                  
+                  
+                )
+                
+                
+               
+                
+                )
       ),
       
       # Info tab content

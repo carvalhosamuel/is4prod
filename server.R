@@ -40,7 +40,8 @@ shinyServer(function(input, output) {
       
       names(inputdata) <- c("Time","AIRMS","BIRMS","CIRMS")
     
-      inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%S", tz = "GMT")
+      options(digits.secs = 3);
+      inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
       
       attach(inputdata)
       
@@ -74,10 +75,15 @@ shinyServer(function(input, output) {
       
       names(inputdata) <- c("Time","AIRMS","BIRMS","CIRMS")
       
-      inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%S", tz = "GMT")
+      
+      
+      options(digits.secs = 3);
+      inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
+      
+     
       
       attach(inputdata)
-      
+    
       #Gets both limits of timeseries in order to plot it
       begin1 <- inputdata$Time[1]
       end1 <- inputdata$Time[length(inputdata$Time)]
@@ -128,9 +134,9 @@ shinyServer(function(input, output) {
   
   output$avgBox <- renderInfoBox({
     
-    from <<- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ", tz ="GMT")
+    from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ", tz ="GMT")
     
-    to <<- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ", tz ="GMT")
+    to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ", tz ="GMT")
     
     newdata <<- subset(AvgKW, Time >= from & Time <= to)
     
@@ -306,7 +312,6 @@ shinyServer(function(input, output) {
     windowsmatrix <- rollapply(x, CT, function(z) c(z))
     
     #Features construction using the fastICA algorithm
-    library(fastICA)
     features <- fastICA(windowsmatrix, input$features, fun = "exp", method = "C", row.norm = FALSE, maxit = 200, tol = 0.0001, verbose = TRUE)
     
     #IF statement to choose between PCA or ICA, depending on input from dashboard
@@ -323,7 +328,6 @@ shinyServer(function(input, output) {
     set.seed(42)
     
     #The 'reshape' package provides the 'rescaler' function.
-    library(reshape, quietly=TRUE)
     
     #Generate a kmeans cluster of size 2
     ckmeans <- kmeans(sapply(na.omit(features[,  names(features)]), rescaler, "range"), 2)
@@ -460,7 +464,6 @@ shinyServer(function(input, output) {
     windowsmatrix <- rollapply(x, CT, function(z) c(z))
     
     #Features construction using the fastICA algorithm
-    library(fastICA)
     features <- fastICA(windowsmatrix, input$features3c, fun = "exp", method = "C", row.norm = FALSE, maxit = 200, tol = 0.0001, verbose = TRUE)
     
     #IF statement to choose between PCA or ICA, depending on input from dashboard
@@ -477,7 +480,6 @@ shinyServer(function(input, output) {
     set.seed(42)
     
     #The 'reshape' package provides the 'rescaler' function.
-    library(reshape, quietly=TRUE)
     
     #Generate a kmeans cluster of size 2
     ckmeans <- kmeans(sapply(na.omit(features[,  names(features)]), rescaler, "range"), 3)
@@ -575,4 +577,110 @@ shinyServer(function(input, output) {
     
   })
   
+  output$timepiechart <- renderPlot({
+    
+    pTime <- round(kpis2c$productionT/3600, 2)
+    iTime <- round(kpis2c$idleT/3600, 2)
+    slices <- c(pTime,iTime)
+    labelsarray <- c(paste("Production: ", round((pTime/(pTime+iTime))*100,2), "%"), paste("Idle: ", round((iTime/(pTime+iTime))*100,2), "%"))
+    pie(slices, labels = labelsarray, main = "Time", col = c("cadetblue2","coral2"), radius = 0.8,  border = "white"  )
+    
+  })
+  
+  output$energypiechart <- renderPlot({
+    
+    pKw <- round(kpis2c$kwProd/3600, 3)
+    iKw <- round(kpis2c$kwIdle/3600, 3)
+    slices <- c(pKw,iKw)
+    labelsarray <- c(paste("Production: ", round((pKw/(pKw+iKw))*100,2), "%"), paste("Idle: ", round((iKw/(pKw+iKw))*100,2), "%"))
+    
+    pie(slices, labels = labelsarray, main = "Energy", col = c("cadetblue2","coral2"), radius = 0.8,  border = "white"  )
+    
+  })
+  
+  output$timereport <- renderUI({
+    
+    from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+    to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+    pTime <- round(kpis2c$productionT/3600, 2)
+    iTime <- round(kpis2c$idleT/3600, 2)
+    productcount <- kpis2c$products
+    totaltime <- pTime+iTime
+    
+    str1 <- paste("<b>",totaltime ,"</b> hours of data were analysed, ")
+    str2 <- paste("from <b>", from, "</b> to <b>", to,"</b>.")
+    str3 <- paste("The machine spent <b>", pTime ,"</b> hours producing and <b>", iTime ,"</b> hours on idle.")
+    str4 <- paste("<b>", productcount ,"</b> products were made during this time.")
+    str5 <- paste("In average, each product took <b>", format(round((pTime*3600/productcount), 2), nsmall = 2) ,"</b> seconds to be produced.")
+  
+    HTML(paste(str1, str2, str3, str4, str5, sep = '<br/>'))
+    
+  })
+  
+  output$energyreport <- renderUI({
+    
+    pKw <- round(kpis2c$kwProd/3600, 2)
+    iKw <- round(kpis2c$kwIdle/3600, 2)
+    productcount <- kpis2c$products
+    totalKw <- pKw + iKw
+    kwprice <- round(input$kwprice,2)
+    
+    str1 <- paste("<b>",totalKw ,"</b> KWh were consumed by the machine on the analysed data.")
+    str2 <- paste("The total energy cost for the analysed period was <b>",format(round((totalKw*kwprice), digits = 2),nsmall = 2), "</b> €.")
+    str3 <- paste("The machine consumed <b>", pKw ,"</b> KWh producing and <b>", iKw ,"</b> KWh on idle.")
+    str4 <- paste("The production cost was <b>",format(round((pKw*kwprice),digits =2),nsmall = 2) ,"</b>€, while idle consumed <b>", format(round((iKw*kwprice), digits =2), nsmall = 2) ,"</b> € in energy.")
+    str5 <- paste("<b>", productcount ,"</b> products were made during this time.")
+    str6 <- paste("In average, each product took <b>", format(round((pKw/productcount), 2), nsmall = 2) ,"</b> KWh to be produced.")
+    str7 <- paste("The average energy cost addressed to each produced was <b>",format((pKw*kwprice/productcount),digits =2)," </b> €.")
+    
+    HTML(paste(str1, str2, str3, str4, str5,str6,str7, sep = '<br/>'))
+    
+  })
+  
+  output$costsreport <- renderUI({
+    
+    pKw <- round(kpis2c$kwProd/3600, 2)
+    iKw <- round(kpis2c$kwIdle/3600, 2)
+    pTime <- round(kpis2c$productionT/3600, 2)
+    iTime <- round(kpis2c$idleT/3600, 2)
+    kwprice <- round(input$kwprice,2)
+    
+    str1 <- paste("This machine costs")
+    str2 <- paste("<h3>",format(round(pKw*kwprice/pTime, digits = 2), nsmall = 2), " €/h </h3>")
+    str3 <- paste("when producing. <hr>")
+    str4 <- paste("This machine costs")
+    str5 <- paste("<h3>",format(round(iKw*kwprice/iTime, digits = 2), nsmall = 2), " €/h </h3>")
+    str6 <- paste("when idle. <br/>")
+    
+    
+    HTML(paste(str1, str2, str3, str4, str5,str6, sep = '<br/>'))
+    
+  })
+  
+  output$totaltimebox <- renderInfoBox({
+    
+    pTime <- round(kpis2c$productionT/3600, 2)
+    iTime <- round(kpis2c$idleT/3600, 2)
+    totaltime <- pTime+iTime
+    
+    infoBox("Total Time", totaltime, "hours", icon = icon("clock-o"),color = "blue", fill = TRUE)
+    
+  })
+  
+  output$productiontimebox <- renderInfoBox({
+    
+    pTime <- round(kpis2c$productionT/3600, 2)
+   
+    
+    infoBox("Production Time", pTime, "hours", icon = icon("clock-o"), color = "light-blue", fill = TRUE)
+    
+  })
+  
+  output$idletimebox <- renderInfoBox({
+    
+    iTime <- round(kpis2c$idleT/3600, 2)
+    
+    infoBox("Idle Time", iTime, "hours", icon = icon("clock-o"),color = "red", fill = TRUE)
+    
+  })
 })
