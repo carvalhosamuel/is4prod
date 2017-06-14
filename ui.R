@@ -58,10 +58,8 @@ dashboardPage(
                     status = "info",
                     solidHeader = TRUE,
                     width = 12,
-                    #img(
-                    #  src = "logo.png"
-                    #),
-                    #h2("IS4PROD App"),
+            
+                    tags$img(src='bghome.png', align = "right"), 
                     h2("Dynamic Web-based Energy Profiles Analytics"),
                     br(),
                     h4(
@@ -77,11 +75,19 @@ dashboardPage(
                     br(),
                     h4("Further instructions are available inside each tab panel."),
                     br(),
-                    h4(
-                      HTML('&copy'),
-                      '2017 By Samuel Carvalho. '
-                     
-                    )
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
+                    strong('By Samuel Carvalho, 2017')
+                    
+                    
                 )
                 
               )
@@ -126,7 +132,7 @@ dashboardPage(
                                      '.csv')),
                   checkboxInput('demodataset',"I won't upload a file. Use the demo dataset instead.",FALSE),
                   tags$hr(),
-                  h4("Quick Formatting Options:"),
+                  h4("Quick Formatting Options"),
                   numericInput('voltage','Phase-to-phase Voltage', 400, min = 0, max = 1000000, step = 1),
                   checkboxInput('header', 'Header', TRUE),
                   radioButtons('sep', 'Separator',
@@ -160,7 +166,7 @@ dashboardPage(
               fluidRow(
                 #Info Box
                 box(
-                  title = "Additional help/information:",
+                  title = "Additional help/information",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -180,11 +186,12 @@ dashboardPage(
                 
                 #Graph box
                 box(
-                  title = "Select your data from the graph below:",
+                  title = "Select your data from the graph below",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
                   width = 12,
+                
                   dygraphOutput("timeseries"),
                   hr(),
                   h3("Quick Insights:"),
@@ -206,15 +213,15 @@ dashboardPage(
                 
                 #Info Box
                 box(
-                  title = "Additional help/information:",
+                  title = "Additional help/information",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
                   collapsed = TRUE,
                   width = 12,
                   br(),
-                  div("This is the KW histogram from your selection. The bars show the occurence (in a density scale, 
-                      from 0 to 1) of the values of KW given by the X axis. The line is a smoothed curve of the same information. 
+                  div("This is the KW histogram from your selection. The bars show the occurence, in a density scale, 
+                      of the values of KW given by the X axis. The line is a smoothed curve of the same information. 
                       A desirable energy histogram would have higher peaks around the typical production KW values, and no peaks 
                       close to zero, meaning that the process stays more often on production than in idle or stand-by status.
                       Use this histogram to establish a reasonable treshold between idle and production energy values."),
@@ -226,7 +233,7 @@ dashboardPage(
                 
                 #Graph box
                 box(
-                  title = "Energy histogram of your data:",
+                  title = "Energy histogram of your data",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -237,7 +244,7 @@ dashboardPage(
                 
                 #Graph Options
                 box(
-                  title = "Options:",
+                  title = "Options",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -258,7 +265,7 @@ dashboardPage(
                 
                 #Info Box
                 box(
-                  title = "Additional help/information:",
+                  title = "Additional help/information",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -279,7 +286,7 @@ dashboardPage(
                 
                 #Graph box
                 box(
-                  title = "Cycle time identification:",
+                  title = "Cycle time identification",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -294,7 +301,7 @@ dashboardPage(
                 
                 #Graph Options
                 box(
-                  title = "Options:",
+                  title = "Options",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -315,7 +322,7 @@ dashboardPage(
                 
                 #Info Box
                 box(
-                  title = "Additional help/information:",
+                  title = "Additional help/information",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -323,9 +330,11 @@ dashboardPage(
                   width = 12,
                   br(),
                   div("This graph is the outcome of a clustering algorithm called KMeans. The algorithm will automatically categorise your data into
-                      two different categories, expected to be production and idle. The green points indicate production, and the blue ones indicate idle.
+                      two different categories, expected to be production and idle. The green points indicate production, and the red ones indicate idle.
                       A cycle time must be specified. By the default, the best candidate from the previous tab will be used. There are also controls to choose
-                      between PCA (Principal Component Analysis) and ICA (Independent Component Analysis) features, besides the desired number of features."
+                      between PCA (Principal Component Analysis) and ICA (Independent Component Analysis) features, besides the desired number of features. By
+                      changing these controls you can change some parameters to be used by the classification algorithm, and therefore generate a different output
+                      for the same dataset."
                   )    
                   
                   
@@ -334,7 +343,7 @@ dashboardPage(
                 
                 #Graph box
                 box(
-                  title = "Clustering:",
+                  title = "Clustering",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -353,7 +362,7 @@ dashboardPage(
                 
                 #Graph Options
                 box(
-                  title = "Options:",
+                  title = "Options",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -375,7 +384,7 @@ dashboardPage(
 
                 #Info Box
                 box(
-                  title = "Additional help/information:",
+                  title = "Additional help/information",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -394,7 +403,7 @@ dashboardPage(
 
                 #Graph box
                 box(
-                  title = "Clustering:",
+                  title = "Clustering",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -413,7 +422,7 @@ dashboardPage(
 
                 #Graph Options
                 box(
-                  title = "Options:",
+                  title = "Options",
                   status = "info",
                   solidHeader = TRUE,
                   collapsible = TRUE,
@@ -467,10 +476,10 @@ dashboardPage(
                   p("Insert here the price of the KWh for the costs' addressing calculations."),
                   hr(),
                   uiOutput("costsreport"),
-                  hr(),
-                  strong("Download This Report"),
-                  p("(Generates a .pdf file)"),
-                  downloadButton('downloadReport')
+                  hr()
+                  # strong("Download This Report"),
+                  # p("(Generates a .pdf file)"),
+                  # downloadButton('downloadReport')
                   
                   
                   
@@ -505,7 +514,46 @@ dashboardPage(
       
       # Info tab content
       tabItem(tabName = "info",
-              h2("Info tab content")
+              box(
+                title = "Info",
+                status = "info",
+                solidHeader = TRUE,
+                collapsible = TRUE,
+                width = 12,
+                tags$img(src='bginfo.png', align = "right"), 
+                h2("Acknowledgements"),
+                br(),
+                h4("This app was developed at the", a(href = 'http://www.is4prod.ie', 'IS4PROD Digital Innovation Hub'),", a Project Funded by The European Union, and the Author would like to thank:"),
+                #br(),
+                h4(a(href = 'http://thea.ie', 'THEA')," and The Government of Ireland, scholarship providers to the Author;"),
+                #br(),
+                h4(a(href = 'http://www.lit.ie', 'Limerick Institute of Technology')," and ", a(href = 'http://www.acornresearch.ie', 'Acorn Research Centre'),", as well as its staff, for hosting and supporting the research behind this tool;"),
+                #br(),
+                h4("The partner companies, which kindly agreed to host data collections and experiments;"),
+                #br(),
+                h4("The", a(href = 'https://www.r-project.org', 'R, '), a(href = 'https://www.rstudio.com', 'RStudio'), " and ", a(href = 'https://shiny.rstudio.com/', 'Shiny')," developers and community, for their valuable efforts and great support;"),
+                #br(),
+                h4("All the developers of the R libraries utilised on this project: " 
+                   , a(href = 'https://cran.r-project.org/web/packages/Cairo/index.html', 'Cairo, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/dygraphs/index.html', 'dygraphs, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/fastICA/index.html', 'fastICA, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/ggplot2/index.html', 'ggplot2, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/rattle/index.html', 'rattle, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/reshape/index.html', 'reshape, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/rmarkdown/index.html', 'rmarkdown, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/shiny/index.html', 'shiny, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/shinydashboard/index.html', 'shinydashboard, ')
+                   , a(href = 'https://cran.r-project.org/web/packages/xts/index.html', 'xts, ')," and "
+                   , a(href = 'https://cran.r-project.org/web/packages/zoo/index.html', 'zoo.')),
+                br(),
+                h4("Source code available at GitHub:", a(href = 'https://github.com/carvalhosamuel/is4prod', 'IS4PROD App Repository'))
+                
+                
+                
+                
+                
+              )
+              
       )
     )
   )

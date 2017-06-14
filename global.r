@@ -10,14 +10,13 @@ library(Cairo)
 library(xts)
 library(dygraphs)
 library(zoo)
-library(fastICA)
+library(fastICA, quietly=TRUE)
 library(reshape, quietly=TRUE)
+library(rmarkdown)
 
 #Setting right time zone
 Sys.setenv(TZ="GMT")
 Sys.setenv(LANG= "en")
-
-
 
 
 #CSS FOR THE LOADING GIF
@@ -36,15 +35,25 @@ margin-left: -33px; /* half of the spinner's width */
 #plot.recalculating {
 z-index: -2;
 }
+
 .leftdiv{
-height: 400px;
-width: 50%;
-float: left;
+
+position: absolute;
+left: 0px;
+width: 700px;
+border: 3px solid #73AD21;
+padding: 10px;
+
 }
+
 .rightdiv{
-height: 400px;
-width: 50%;
-float: right;
+
+position: absolute;
+right: 0px;
+width: 300px;
+border: 3px solid #73AD21;
+padding: 10px;
+
 }
 .reporttext{
 float: left;
