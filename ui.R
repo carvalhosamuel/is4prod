@@ -66,19 +66,20 @@ dashboardPage(
                       "The IS4PROD App is a ",
                       a(href = 'http://shiny.rstudio.com', 'Shiny'),
                       "web application built on top of R for machine level energy-related data analytics, 
-                      powered by several R packages (more on info tab). The app utilises Machine Learning 
-                      techniques to extract useful insights from energy datasets."),
+                      powered by several R packages (more on 'Info' tab). The app utilises Machine Learning 
+                      techniques to extract useful insights from energy datasets. Its main goals are to
+                      automatically extract or validate human-input data that goes into ERP systems, besides
+                      generating KPIs regarding energy, time and costs."),
                     br(),
                     h4("To get started, upload a CSV file in the 'Data Upload' panel, 
                        then follow down the steps on the sidebar. If you prefer it, use the provided 
-                       demo dataset to familiarise with the app and its features."),
+                       demo dataset to explore the app and its features."),
                     br(),
-                    h4("Further instructions are available inside each tab panel."),
+                    h4("This tool was developed using energy datasets from precision engineering machines,
+                       but further exploration and analyses in different manufacturing sectors are welcome, 
+                       such as injection moulding or 3D printing."),
                     br(),
-                    br(),
-                    br(),
-                    br(),
-                    br(),
+                    h4("Further instructions to perform the step-by-step analysis process are available inside each tab panel."),
                     br(),
                     br(),
                     br(),
