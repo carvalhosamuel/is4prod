@@ -76,7 +76,7 @@ dashboardPage(
                        demo dataset to explore the app and its features."),
                     br(),
                     h4("This tool was developed using energy datasets from precision engineering machines,
-                       but further exploration and analyses in different manufacturing sectors are welcome, 
+                       but further exploration and analyses in different sectors and applications are welcome, 
                        such as injection moulding or 3D printing."),
                     br(),
                     h4("Further instructions to perform the step-by-step analysis process are available inside each tab panel."),
@@ -368,6 +368,7 @@ dashboardPage(
                   solidHeader = TRUE,
                   collapsible = TRUE,
                   width = 2,
+                  radioButtons('usecycletime', 'Choose the cycle time:', c('Use Best Candidate'='default', 'Use Value Below'='custom')),
                   uiOutput("cycletime2"),
                   radioButtons('components', 'Features extraction:', c('PCA Components'='pca', 'ICA Components'='ica')),
                   sliderInput('features', 'Number of features:', min = 2, max = 20, 5)
