@@ -27,98 +27,120 @@ shinyServer(function(input, output) {
     # be found.
     
     if(!input$demodataset){
-      inFile <- input$file1
       
-      if (is.null(inFile))
-        return(NULL)
+      withProgress(message = 'Rendering Table', value = 0, {
       
-      inFile <- as.data.frame(read.csv(inFile$datapath, header=input$header, sep=input$sep, 
-                             quote=input$quote))
+        inFile <- input$file1
+        
+        if (is.null(inFile))
+          return(NULL)
+        
+        inFile <- as.data.frame(read.csv(inFile$datapath, header=input$header, sep=input$sep, 
+                               quote=input$quote))
+        
+        #Transforming input data into AvgKW and Time series
+        inputdata <- inFile
+        
+        names(inputdata) <- c("Time","AIRMS","BIRMS","CIRMS")
       
-      #Transforming input data into AvgKW and Time series
-      inputdata <- inFile
-      
-      names(inputdata) <- c("Time","AIRMS","BIRMS","CIRMS")
-    
-      options(digits.secs = 3);
-      inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
-      
-      attach(inputdata)
-      
-      #Gets both limits of timeseries in order to plot it
-      begin1 <- inputdata$Time[1]
-      end1 <- inputdata$Time[length(inputdata$Time)]
-      
-      #IF loop to flip it, in case times are decrescent in input csv file
-      if((end1 - begin1) < 0){
-        end1 <- inputdata$Time[1]
-        begin1 <- inputdata$Time[length(inputdata$Time)]
-      }
-      
-      V <- input$voltage
-      
-      AvgKW <<- V*sqrt(3)*(rowMeans(inputdata[,2:4]))/1000
-      
-      tseries <<- xts(AvgKW, inputdata$Time, tzone = "GMT")
-      
-      endt <<- end1
-      begint <<- begin1
-      
-      inFile[1:15,]
+        options(digits.secs = 3);
+        inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
+        
+        attach(inputdata)
+        
+        incProgress(0.5, detail = "Fetching data")
+        
+        #Gets both limits of timeseries in order to plot it
+        begin1 <- inputdata$Time[1]
+        end1 <- inputdata$Time[length(inputdata$Time)]
+        
+        #IF loop to flip it, in case times are decrescent in input csv file
+        if((end1 - begin1) < 0){
+          end1 <- inputdata$Time[1]
+          begin1 <- inputdata$Time[length(inputdata$Time)]
+        }
+        
+        V <- input$voltage
+        
+        AvgKW <<- V*sqrt(3)*(rowMeans(inputdata[,2:4]))/1000
+        
+        tseries <<- xts(AvgKW, inputdata$Time, tzone = "GMT")
+        
+        endt <<- end1
+        begint <<- begin1
+        
+        inFile[1:15,]
+      }) 
+        
     }
     else{
-      inFile <- as.data.frame(read.csv("input.csv", header=TRUE, sep=',', 
-                                       quote='"'))
       
-      #Transforming input data into AvgKW and Time series
-      inputdata <- inFile
+      withProgress(message = 'Rendering Table', value = 0, {
       
-      names(inputdata) <- c("Time","AIRMS","BIRMS","CIRMS")
+        inFile <- as.data.frame(read.csv("input.csv", header=TRUE, sep=',', 
+                                         quote='"'))
+        
+        #Transforming input data into AvgKW and Time series
+        inputdata <- inFile
+        
+        names(inputdata) <- c("Time","AIRMS","BIRMS","CIRMS")
+        
+        
+        
+        options(digits.secs = 3);
+        inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
+        
+        incProgress(0.5, detail = "Fetching data")
+        
+        attach(inputdata)
       
-      
-      
-      options(digits.secs = 3);
-      inputdata$Time <- strptime(as.character(inputdata$Time), format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
-      
-     
-      
-      attach(inputdata)
-    
-      #Gets both limits of timeseries in order to plot it
-      begin1 <- inputdata$Time[1]
-      end1 <- inputdata$Time[length(inputdata$Time)]
-      
-      #IF loop to flip it, in case times are decrescent in input csv file
-      if((end1 - begin1) < 0){
-        end1 <- inputdata$Time[1]
-        begin1 <- inputdata$Time[length(inputdata$Time)]
-      }
-      
-      V <- input$voltage
-      
-      AvgKW <<- V*sqrt(3)*(rowMeans(inputdata[,2:4]))/1000
-      
-      tseries <<- xts(AvgKW, inputdata$Time, tzone = "GMT")
-      
-      endt <<- end1
-      begint <<- begin1
-      
-      inFile[1:15,]
+        #Gets both limits of timeseries in order to plot it
+        begin1 <- inputdata$Time[1]
+        end1 <- inputdata$Time[length(inputdata$Time)]
+        
+        #IF loop to flip it, in case times are decrescent in input csv file
+        if((end1 - begin1) < 0){
+          end1 <- inputdata$Time[1]
+          begin1 <- inputdata$Time[length(inputdata$Time)]
+        }
+        
+        V <- input$voltage
+        
+        AvgKW <<- V*sqrt(3)*(rowMeans(inputdata[,2:4]))/1000
+        
+        tseries <<- xts(AvgKW, inputdata$Time, tzone = "GMT")
+        
+        endt <<- end1
+        begint <<- begin1
+        
+        inFile[1:15,]
+        
+      })
     }
+    
   })
 
   #Time series plot rendering for "Data Selection" tab
   
   output$timeseries <- renderDygraph({
     
-    graph <<- dygraph(tseries, main = "Time Series Data", ylab = "KW") %>%
-      dyOptions(drawGrid = TRUE) %>%
-      dyRangeSelector(dateWindow = c(as.character(begint), as.character(endt)))  %>%
-      dyShading(from = as.character(begint), to = as.character(endt), color = "white") %>%
-      dyOptions(retainDateWindow = TRUE)
+    withProgress(message = 'Rendering Plot', value = 0, {
+      
+      incProgress(0.5, detail = "Fetching data")
+      
     
-    graph
-  
+      graph <<- dygraph(tseries, main = "Time Series Data", ylab = "KW") %>%
+        dyOptions(drawGrid = TRUE) %>%
+        dyRangeSelector(dateWindow = c(as.character(begint), as.character(endt)))  %>%
+        dyShading(from = as.character(begint), to = as.character(endt), color = "white") %>%
+        dyOptions(retainDateWindow = TRUE)
+      
+      incProgress(0.5, detail = "Creating plot")
+     
+      
+      graph
+      
+    })
   })
   
   output$fromtoBox <- renderInfoBox({
@@ -166,21 +188,27 @@ shinyServer(function(input, output) {
   })
   
   output$histo <- renderPlot({
+    
+    withProgress(message = 'Rendering Plot', value = 0, {
+      
+      incProgress(0.5, detail = "Fetching data")
   
-    from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
-    
-    to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
-    
-    newdata <- subset(AvgKW, Time >= from & Time <= to)
-    
-    df <- data.frame(newdata)
-    
-    ggplot(data=df, aes(df)) + 
-      geom_histogram(colour = "darkgreen", fill = "white", binwidth = input$binwidth, aes(y = ..density..)) +
-      geom_density()+
-      coord_cartesian(xlim = ranges$x2, ylim = ranges$y2)+
-      labs(x = "KW" , y="Density")
-    
+      from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+      
+      to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+      
+      newdata <- subset(AvgKW, Time >= from & Time <= to)
+      
+      df <- data.frame(newdata)
+      
+      incProgress(0.5, detail = "Creating plot")
+      
+      ggplot(data=df, aes(df)) + 
+        geom_histogram(colour = "darkgreen", fill = "white", binwidth = input$binwidth, aes(y = ..density..)) +
+        geom_density()+
+        coord_cartesian(xlim = ranges$x2, ylim = ranges$y2)+
+        labs(x = "KW" , y="Density")
+    })
   })
   
   ############## HISTOGRAM PLOT ZOOM HANDLING
@@ -207,46 +235,52 @@ shinyServer(function(input, output) {
   
   output$correloplot <- renderPlot({
     
-    find_peaks <- function (x, m = input$filter){
-      shape <- diff(sign(diff(x, na.pad = FALSE)))
-      pks <- sapply(which(shape < 0), FUN = function(i){
-        z <- i - m + 1
-        z <- ifelse(z > 0, z, 1)
-        w <- i + m + 1
-        w <- ifelse(w < length(x), w, length(x))
-        if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])) return(i + 1) else return(numeric(0))
-      })
-      pks <- unlist(pks)
-      pks
-    }
-
-    from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+    withProgress(message = 'Rendering Plot', value = 0, {
+      
+      incProgress(0.5, detail = "Fetching data")
     
-    to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
-    
-    Ts <- abs(as.numeric(difftime(Time[2], Time[1], units = "secs"))) 
-
-    newdata <- subset(AvgKW, Time >= from & Time <= to)
-
-    correlogram <<- acf(newdata, type = "correlation", lag.max = input$lagsnumber, plot = TRUE, main = "Candidate cycle times in seconds (blue labels)", ylab = "Autocorrelation Level")
-
-    text(find_peaks(correlogram$acf), correlogram$acf[find_peaks(correlogram$acf)], as.character(find_peaks(correlogram$acf)*Ts), col = "blue")
-    
-    svalues <- find_peaks(correlogram$acf)*Ts
-    cvalues <- correlogram$acf[find_peaks(correlogram$acf)]
-    
-    pairs <- as.data.frame(cbind(cvalues,svalues))
-    
-    pairs <- pairs[order(pairs$cvalues, decreasing = TRUE),]
-    
-    
-    
-    candidates$st <-  paste0(pairs$svalues[1])
-    candidates$st3c <- paste0(pairs$svalues[1])
-    candidates$nd <-  paste0(pairs$svalues[2])
-    candidates$rd <-  paste0(pairs$svalues[3])
-    
-    
+      find_peaks <- function (x, m = input$filter){
+        shape <- diff(sign(diff(x, na.pad = FALSE)))
+        pks <- sapply(which(shape < 0), FUN = function(i){
+          z <- i - m + 1
+          z <- ifelse(z > 0, z, 1)
+          w <- i + m + 1
+          w <- ifelse(w < length(x), w, length(x))
+          if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])) return(i + 1) else return(numeric(0))
+        })
+        pks <- unlist(pks)
+        pks
+      }
+  
+      from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+      
+      to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
+      
+      Ts <- abs(as.numeric(difftime(Time[2], Time[1], units = "secs"))) 
+  
+      newdata <- subset(AvgKW, Time >= from & Time <= to)
+      
+      incProgress(0.5, detail = "Creating plot")
+  
+      correlogram <<- acf(newdata, type = "correlation", lag.max = input$lagsnumber, plot = TRUE, main = "Candidate cycle times in seconds (blue labels)", ylab = "Autocorrelation Level")
+  
+      text(find_peaks(correlogram$acf), correlogram$acf[find_peaks(correlogram$acf)], as.character(find_peaks(correlogram$acf)*Ts), col = "blue")
+      
+      svalues <- find_peaks(correlogram$acf)*Ts
+      cvalues <- correlogram$acf[find_peaks(correlogram$acf)]
+      
+      pairs <- as.data.frame(cbind(cvalues,svalues))
+      
+      pairs <- pairs[order(pairs$cvalues, decreasing = TRUE),]
+      
+      
+      
+      candidates$st <-  paste0(pairs$svalues[1])
+      candidates$st3c <- paste0(pairs$svalues[1])
+      candidates$nd <-  paste0(pairs$svalues[2])
+      candidates$rd <-  paste0(pairs$svalues[3])
+      
+    })
       
     
   })
@@ -294,127 +328,144 @@ shinyServer(function(input, output) {
   
   output$clustering2 <- renderDygraph({
     
-    #Garbage Collection: releases memory
-    gc()
+    withProgress(message = 'Calculating clusters', value = 0, {
+      
+      incProgress(0.1, detail = "Fetching data")
     
-    
-    from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
-    
-    to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
-    
-    Ts <- abs(as.numeric(difftime(Time[2], Time[1], units = "secs"))) 
-    
-    newdata <- subset(AvgKW, Time >= from & Time <= to)
-    newdataTime <- subset(Time, Time >= from & Time <= to)
-    
-    x <- newdata
-    
-    #Sliding window (Cycle time computed as number of samples)
-    if(input$usecycletime == 'custom'){
-      CT <- input$ctime2/Ts
-    }else{
-      CT <- as.numeric(candidates$st)/Ts
-    }
-    
-    
-    #Extracted matrix using sliding window
-    windowsmatrix <- as.matrix(rollapply(x, CT, function(z) c(z)))
-    
-    #Features construction using the fastICA algorithm
-    
-    features <- fastICA(windowsmatrix, input$features, fun = "exp", method = "C", row.norm = FALSE, maxit = 200, tol = 0.0001, verbose = FALSE)
-    
-    #IF statement to choose between PCA or ICA, depending on input from dashboard
-    if(input$components == "pca"){
-      #PCA Components
-      features <- as.data.frame(features$X %*% features$K) 
-    }
-    else{    
-      #ICA Componets
-      features <- as.data.frame(features$S)   
-    }
-    
-    ### CLUSTERING STARTS
-    set.seed(42)
-    
-    #The 'reshape' package provides the 'rescaler' function.
-    
-    #Generate a kmeans cluster of size 2
-    ckmeans <- kmeans(sapply(na.omit(features[,  names(features)]), rescaler, "range"), 2)
-   
-    ### END OF CLUSTERING
-    
-    #Aligning the cluster indexes array with the data array
-    if((CT-1)%%2==1){
-      Xnose <- floor((CT-1)/2)
-      Xtail <- Xnose + 1 
-    }else{
-      Xnose <- (CT-1)/2
-      Xtail <- Xnose
-    }
-    
-    firstcluster <- ckmeans$cluster[1]
-    lastcluster <- last(ckmeans$cluster)
-    nosechunk <- rep(firstcluster, Xnose)
-    tailchunk <- rep(lastcluster, Xtail)
-    clusters_index <- as.matrix(c(nosechunk,ckmeans$cluster,tailchunk))
-    
-    #Resulting matrix of each data point assigned to one cluster
-    vec <- as.matrix(cbind(newdata,seq(1,length(newdata),by = 1),clusters_index))
-    
-    #Subsetting clusters 1 and 2 and taking the average to tell production/idle apart
-    cluster1 <- subset(vec, vec[,3] == 1)
-    avg1 <- mean(cluster1[,1])
-    total1 <- sum(Ts*rollmean(cluster1[,1],2))
-    
-    cluster2 <- subset(vec, vec[,3] == 2)
-    avg2 <- mean(cluster2[,1])
-    total2 <- sum(Ts*rollmean(cluster2[,1],2))
-    
-    #If statement to make sure production is always plotted in blue by comparing avg1 and avg2
-    
-    if(avg1>avg2){
+      #Garbage Collection: releases memory
+      gc()
       
       
-      tsprod <- xts(newdata[cluster1[,2]],newdataTime[cluster1[,2]], tzone = "GMT")
-      tsidle <- xts(newdata[cluster2[,2]],newdataTime[cluster2[,2]], tzone = "GMT")
+      from <- as.POSIXlt(req(input$timeseries_date_window[[1]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
       
-      kpis2c$products <- floor(nrow(cluster1)/CT)
-      kpis2c$productionT <- ceiling(nrow(cluster1)*Ts)
-      kpis2c$idleT <- ceiling(nrow(cluster2)*Ts)
-      kpis2c$kwProd <- total1
-      kpis2c$kwIdle <- total2
+      to <- as.POSIXlt(req(input$timeseries_date_window[[2]]), format="%Y-%m-%dT%H:%M:%OSZ",tz ="GMT")
       
-    }
-    else{
+      Ts <- abs(as.numeric(difftime(Time[2], Time[1], units = "secs"))) 
       
-      tsprod <- xts(newdata[cluster2[,2]],newdataTime[cluster2[,2]], tzone = "GMT")
-      tsidle <- xts(newdata[cluster1[,2]],newdataTime[cluster1[,2]], tzone = "GMT")
+      newdata <- subset(AvgKW, Time >= from & Time <= to)
+      newdataTime <- subset(Time, Time >= from & Time <= to)
       
-      kpis2c$products <- floor(nrow(cluster2)/CT)
-      kpis2c$productionT <- ceiling(nrow(cluster2)*Ts)
-      kpis2c$idleT <- ceiling(nrow(cluster1)*Ts)
-      kpis2c$kwProd <- total2
-      kpis2c$kwIdle <- total1
+      x <- newdata
       
-    }
+      
+      
+      #Sliding window (Cycle time computed as number of samples)
+      if(input$usecycletime == 'custom'){
+        CT <- input$ctime2/Ts
+      }else{
+        CT <- as.numeric(candidates$st)/Ts
+      }
+      
+      incProgress(0.1, detail = "Building data matrix")
+      
+      #Extracted matrix using sliding window
+      windowsmatrix <- as.matrix(rollapply(x, CT, function(z) c(z)))
+      
+      #Features construction using the fastICA algorithm
+      incProgress(0.1, detail = "Extracting features")
+      
+      features <- fastICA(windowsmatrix, input$features, fun = "exp", method = "C", row.norm = FALSE, maxit = 200, tol = 0.0001, verbose = FALSE)
+      
+      #IF statement to choose between PCA or ICA, depending on input from dashboard
+      if(input$components == "pca"){
+        #PCA Components
+        features <- as.data.frame(features$X %*% features$K) 
+      }
+      else{    
+        #ICA Componets
+        features <- as.data.frame(features$S)   
+      }
+      
+      ### CLUSTERING STARTS
+      set.seed(42)
+      
+      #The 'reshape' package provides the 'rescaler' function.
+      incProgress(0.1, detail = "Running algorithm")
+      
+      #Generate a kmeans cluster of size 2
+      ckmeans <- kmeans(sapply(na.omit(features[,  names(features)]), rescaler, "range"), 2)
+     
+      ### END OF CLUSTERING
+      
+      incProgress(0.1, detail = "Assigning data to clusters")
+      
+      #Aligning the cluster indexes array with the data array
+      if((CT-1)%%2==1){
+        Xnose <- floor((CT-1)/2)
+        Xtail <- Xnose + 1 
+      }else{
+        Xnose <- (CT-1)/2
+        Xtail <- Xnose
+      }
+      
+      firstcluster <- ckmeans$cluster[1]
+      lastcluster <- last(ckmeans$cluster)
+      nosechunk <- rep(firstcluster, Xnose)
+      tailchunk <- rep(lastcluster, Xtail)
+      clusters_index <- as.matrix(c(nosechunk,ckmeans$cluster,tailchunk))
+      
+      #Resulting matrix of each data point assigned to one cluster
+      vec <- as.matrix(cbind(newdata,seq(1,length(newdata),by = 1),clusters_index))
+      
+      incProgress(0.1, detail = "Calculating KPIs")
+      
+      #Subsetting clusters 1 and 2 and taking the average to tell production/idle apart
+      cluster1 <- subset(vec, vec[,3] == 1)
+      avg1 <- mean(cluster1[,1])
+      total1 <- sum(Ts*rollmean(cluster1[,1],2))
+      
+      cluster2 <- subset(vec, vec[,3] == 2)
+      avg2 <- mean(cluster2[,1])
+      total2 <- sum(Ts*rollmean(cluster2[,1],2))
+      
+      #If statement to make sure production is always plotted in blue by comparing avg1 and avg2
+      
+      if(avg1>avg2){
+        
+        
+        tsprod <- xts(newdata[cluster1[,2]],newdataTime[cluster1[,2]], tzone = "GMT")
+        tsidle <- xts(newdata[cluster2[,2]],newdataTime[cluster2[,2]], tzone = "GMT")
+        
+        kpis2c$products <- floor(nrow(cluster1)/CT)
+        kpis2c$productionT <- ceiling(nrow(cluster1)*Ts)
+        kpis2c$idleT <- ceiling(nrow(cluster2)*Ts)
+        kpis2c$kwProd <- total1
+        kpis2c$kwIdle <- total2
+        
+      }
+      else{
+        
+        tsprod <- xts(newdata[cluster2[,2]],newdataTime[cluster2[,2]], tzone = "GMT")
+        tsidle <- xts(newdata[cluster1[,2]],newdataTime[cluster1[,2]], tzone = "GMT")
+        
+        kpis2c$products <- floor(nrow(cluster2)/CT)
+        kpis2c$productionT <- ceiling(nrow(cluster2)*Ts)
+        kpis2c$idleT <- ceiling(nrow(cluster1)*Ts)
+        kpis2c$kwProd <- total2
+        kpis2c$kwIdle <- total1
+        
+      }
+      
+      
+      
+      plotclusters <- cbind(tsprod, tsidle)
+      
+      incProgress(0.1, detail = "Rendering plot")
+      
+      graphCluster <- dygraph(plotclusters, main = "Clustering Output", ylab = "KW") %>%
+        dySeries("..1", label = "Production") %>%
+        dySeries("..2", label = "Idle") %>%
+        dyOptions(drawGrid = TRUE) %>%
+        dyRangeSelector()  %>%
+        dyOptions(colors = c("darkgreen","orangered")) %>%
+        dyLegend(width = 300) 
+        #dyShading(from = fromtime, to = totime, color = "white")
+      
+      #Outputs Cluster
+      graphCluster
     
-    
-    plotclusters <- cbind(tsprod, tsidle)
-    
-    
-    graphCluster <- dygraph(plotclusters, main = "Clustering Output", ylab = "KW") %>%
-      dySeries("..1", label = "Production") %>%
-      dySeries("..2", label = "Idle") %>%
-      dyOptions(drawGrid = TRUE) %>%
-      dyRangeSelector()  %>%
-      dyOptions(colors = c("darkgreen","orangered")) %>%
-      dyLegend(width = 300) 
-      #dyShading(from = fromtime, to = totime, color = "white")
-    
-    #Outputs Cluster
-    graphCluster
-    
+    })
+  
   })
   
   output$productsBox2c <- renderInfoBox({
