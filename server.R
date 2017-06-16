@@ -254,7 +254,7 @@ shinyServer(function(input, output) {
 
   output$cycletime2 = renderUI({
     
-    numericInput("ctime2", "Custom cycle time:", min = 0, max = 5000, candidates$nd, step = 0.5)
+    numericInput("ctime2", "Custom cycle time (s):", min = 0, max = 5000, candidates$nd, step = 0.5)
    
     })
   
